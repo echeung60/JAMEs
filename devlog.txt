@@ -5,3 +5,6 @@ echeung60 -- 2026-01-07 11:25
 
 amyS -- 2026-01-08 11:00
   - flag creation
+
+ethanC -- 2026-01-12 2:11
+  - design doc addition
