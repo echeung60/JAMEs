@@ -8,3 +8,6 @@ amyS -- 2026-01-08 11:00
 
 ethanC -- 2026-01-12 2:11
   - design doc addition
+
+amyS -- 2026-01-12 11:36
+  - INITAL DD REVIEW: Rev’d by 2brown2yellow and XiaoMack - Missing last names for devos, better explanation of users leaderboard and API usage, check usage of Apple’s search API viability on Piazza, APIs could be too complex, missing JS files.
