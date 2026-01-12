@@ -2,3 +2,6 @@ echeung60 -- 2026-01-07 11:25
   - repo creation
   - readme creation
   - devlog creation
+
+amyS -- 2026-01-08 11:00
+  - flag creation
