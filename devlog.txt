@@ -12,5 +12,9 @@ ethanC -- 2026-01-12 2:11
 amyS -- 2026-01-12 11:36
   - INITAL DD REVIEW: Rev’d by 2brown2yellow and XiaoMack - Missing last names for devos, better explanation of users leaderboard and API usage, check usage of Apple’s search API viability on Piazza, APIs could be too complex, missing JS files.
 
+amyS -- 2026-01-12 23:40
+  - setup working app and basic html files
+  - finish login/register
+
 jasonC -- 2026-01-13 6:59
   - same dd review as amy
