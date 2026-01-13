@@ -77,6 +77,7 @@ def register():
     if loggedin():
         return redirect(url_for('start'))
     else:
+        global idVals
         if request.method == 'POST':
             with sqlite3.connect(DB_FILE) as db:
                 c = db.cursor()
@@ -97,7 +98,7 @@ def register():
                         t = t + "password "
                     return registerpage(False, t)
 
-                c.execute("INSERT INTO user_data VALUES (?, ?, ?);", (idVals, request.form['username'].lower(), request.form['password']))
+                c.execute("INSERT INTO user_data VALUES (?, ?, ?, ?);", (idVals, request.form['username'].lower(), request.form['password'], ""))
                 idVals += 1
                 db.commit()
                 
