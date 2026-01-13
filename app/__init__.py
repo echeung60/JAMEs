@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS user_data(
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     saved_songs TEXT
+    total_likes INTEGER
 );""")
 
 c.execute("""
@@ -64,7 +65,7 @@ def loggedin():
         return True
     return False
 
-idVals = 0
+#idVals = 0
 
 #Webpage Sites
 #====================================================================================#
@@ -74,13 +75,14 @@ def home():
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
+    idVals = 0
     if loggedin():
         return redirect(url_for('start'))
     else:
         if request.method == 'POST':
             with sqlite3.connect(DB_FILE) as db:
                 c = db.cursor()
-                
+
                 rows = c.execute("SELECT username FROM user_data WHERE username = ?", (request.form['username'],))
                 result = rows.fetchone()
                 if result:
@@ -100,7 +102,7 @@ def register():
                 c.execute("INSERT INTO user_data VALUES (?, ?, ?);", (idVals, request.form['username'].lower(), request.form['password']))
                 idVals += 1
                 db.commit()
-                
+
                 session.clear()
                 session.permanent = True
                 session['username'] = request.form['username']
@@ -108,7 +110,7 @@ def register():
     return registerpage()
 
 @app.route("/login", methods=['GET', 'POST'])
-def login():    
+def login():
     if loggedin():
         return redirect(url_for('home'))
 
@@ -119,7 +121,7 @@ def login():
                 c = db.cursor()
                 rows = c.execute("SELECT * FROM user_data WHERE username = ?;", (request.form['username'],))
                 result = rows.fetchone()
-                
+
                 if result is None:
                     return loginpage(False, "Username does not exist")
                 elif (request.form['password'] != result[1]):
@@ -134,9 +136,21 @@ def login():
 def profile():
     if not loggedin():
         return redirect(url_for('login'))
-    
+
     # do stuff
-    
+
+@app.route("/leaderboard", methods=["GET"])
+def leaderboard():
+    if not loggedin():
+        return redirect(url_for("login"))
+
+    # Get the top 10 players from the database
+    with sqlite3.connect(DB_FILE) as db:
+        c.execute('SELECT username, total_likes FROM userdata ORDER BY total_likes DESC LIMIT 10')
+        top_players = c.fetchall()
+
+    return leaderboardpage('username')
+
 
 #HTML Pages
 #====================================================================================#
@@ -155,12 +169,14 @@ def loginpage(valid=True, invalid=''):
         return render_template('login.html',invalid=invalid)
     else:
         return render_template('login.html',invalid=invalid)
-    
+
 def profilepage(user=''):
     return render_template('logout.html', user=user)
+
+def leaderboardpage(user=''):
+    return render_template("leaderboard.html", user=user, top_players=top_players)
 
 #====================================================================================#
 if __name__ == "__main__":  # false if this file imported as module
     #app.debug = True  # enable PSOD, auto-server-restart on code chg
     app.run(port=5000)
-    
