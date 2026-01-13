@@ -137,7 +137,35 @@ def profile():
         return redirect(url_for('login'))
     
     # do stuff
+    return profilepage()
+
+@app.route("/activities", methods=['GET', 'POST'])
+def activities():
+    if not loggedin():
+        return redirect(url_for('login'))
     
+    return activitiespage()
+    
+@app.route("/tsg", methods=['GET', 'POST'])
+def tsg():
+    if not loggedin():
+        return redirect(url_for('login'))
+    
+    return tsgpage()
+
+@app.route("/speech-text", methods=['GET', 'POST'])
+def speechText():
+    if not loggedin():
+        return redirect(url_for('login'))
+    
+    return speechTextPage()
+
+@app.route("/leaderboard", methods=['GET', 'POST'])
+def leaderboard():
+    if not loggedin():
+        return redirect(url_for('login'))
+    
+    return leaderboardpage()
 
 #HTML Pages
 #====================================================================================#
@@ -158,7 +186,20 @@ def loginpage(valid=True, invalid=''):
         return render_template('login.html',invalid=invalid)
     
 def profilepage(user=''):
-    return render_template('logout.html', user=user)
+    return render_template('profile.html', user=user)
+
+def activitiespage(user=''):
+    return render_template('activities.html', user=user)
+
+def tsgpage(user=''):
+    return render_template('tsg.html', user=user)
+
+def speechTextPage(user=''):
+    return render_template('speech-text.html', user=user)
+
+def leaderboardpage(user=''):
+    return render_template('leaderboard.html', user=user)
+
 
 #====================================================================================#
 if __name__ == "__main__":  # false if this file imported as module
