@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS user_data(
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     saved_songs TEXT
+    total_likes INTEGER
 );""")
 
 c.execute("""
@@ -98,7 +99,7 @@ def register():
                         t = t + "password "
                     return registerpage(False, t)
 
-                c.execute("INSERT INTO user_data VALUES (?, ?, ?, ?);", (idVals, request.form['username'].lower(), request.form['password'], ""))
+                c.execute("INSERT INTO user_data VALUES (?, ?, ?, ?, ?);", (idVals, request.form['username'].lower(), request.form['password'], "", 0))
                 idVals += 1
                 db.commit()
                 

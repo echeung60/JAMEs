@@ -21,6 +21,13 @@
      }
   </style>
    <body>
+     <nav>
+        <button class="c"> <a class="d" href="{{ url_for('home') }}">Home</a> </button>
+        <button class="c"> <a class="d" href="{{ url_for('activities') }}">Activities</a> </button>
+        <button class="c"> <a class="d" href="{{url_for('speechText')}}">Speech-Text</a> </button>
+        <button class="c"> <a class="d" href="{{ url_for('tsg') }}">TSG</a> </button>
+        <button class="c"> <a class="d" href="{{ url_for('profile') }}">Profile</a> </button>
+     </nav>
          <h1>
             Leaderboard
          </h1>
