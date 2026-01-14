@@ -99,7 +99,7 @@ def register():
                         t = t + "password "
                     return registerpage(False, t)
 
-                c.execute("INSERT INTO user_data (user_id, username, password, saved_songs, total_songs) VALUES (?, ?, ?, ?, ?);", (idVals, request.form['username'].lower(), request.form['password'], "", 0))
+                c.execute("INSERT INTO user_data VALUES (?, ?, ?, ?, ?);", (idVals, request.form['username'].lower(), request.form['password'], "", 0))
                 idVals += 1
                 idVals += 1
                 db.commit()
@@ -167,11 +167,21 @@ def leaderboard():
     if not loggedin():
         return redirect(url_for('login'))
 
-    with sqlite3.connect(DB_FILE) as db:
-        c.execute('SELECT username, total_likes FROM userdata ORDER BY total_likes DESC LIMIT 10')
+    with sqlite3.connect("songs.db") as db:
+        c = db.cursor()
+        c.execute('SELECT username, total_songs FROM user_data ORDER BY total_songs DESC LIMIT 10')
         top_players = c.fetchall()
 
-    return leaderboardpage(top_players)
+    return render_template(
+        "leaderboard.html",
+        username=session["username"],  # Pass current username to leaderboard.html
+        top_players=top_players  # Pass the top 10 players to leaderboard.html
+    )
+
+@app.route("/logout")
+def logout():
+    session.pop('username', None) # remove username from session
+    return redirect(url_for('login'))
 
 #HTML Pages
 #====================================================================================#
@@ -202,9 +212,6 @@ def tsgpage(user=''):
 
 def speechTextPage(user=''):
     return render_template('speech-text.html', user=user)
-
-def leaderboardpage(top_players, user=''):
-    return render_template('leaderboard.html', user=user, top_players=top_players)
 
 
 #====================================================================================#
