@@ -18,3 +18,8 @@ amyS -- 2026-01-12 23:40
 
 jasonC -- 2026-01-13 6:59
   - same dd review as amy
+
+jasonC -- 2026-01-14 0:07
+  - created leaderboard function
+    - will do leaderboard.html tmr
+  - MORE INITIAL DD REVIEW: added js files, removed bored api and activities page
