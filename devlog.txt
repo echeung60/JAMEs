@@ -28,3 +28,7 @@ amyS -- 2026-01-14 23:58
 - started putting info into db tables
 - html template
 - logout stuff
+
+jasonC -- 2026-01-15 1:48
+  - completed html tables
+  - removed js files from dd
