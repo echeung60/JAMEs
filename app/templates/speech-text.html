@@ -27,9 +27,25 @@
         <button class="c"> <a class="d" href="{{ url_for('tsg') }}">TSG</a> </button>
         <button class="c"> <a class="d" href="{{ url_for('leaderboard') }}">Leaderboard</a> </button>
         <button class="c"> <a class="d" href="{{ url_for('profile') }}">Profile</a> </button>
+        <button class="c"> <a class="d" href="{{ url_for('logout') }}">Logout</a> </button>
      </nav>
          <h1>
             Speech-Text
          </h1>
+         {% for song in allSongList %}
+                    <div class="col-sm-2">
+                        <div class="card" style="width: 12rem;">
+                            <img src="{{ song['image'] }}" class="card-img-top" alt="...">
+                            <div class="card-body">
+                                <h5 class="card-title">Title: {{ song["song_name"] }}</h5>
+                                <p class="card-text">Artist: {{ song["artist"] }}</p>
+                                <!--<div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="reroll" value="{{ loop.index }}">
+                                <label class="form-check-label" for="{{ loop.index }}">Re-roll songs </label>
+                              </div> -->
+                            </div>
+                        </div>
+                    </div>
+         {% endfor %}
    </body>
 </html>

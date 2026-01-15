@@ -4,7 +4,7 @@
 # SoftDev
 # P02
 # 2025-01-09
-# time spent: 0.0
+# time spent: 20.0
 
 from flask import Flask
 from flask import render_template  # facilitate jinja templating
@@ -34,19 +34,52 @@ CREATE TABLE IF NOT EXISTS user_data(
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     saved_songs TEXT,
-    total_songs INT
+    total_songs INTEGER
 );""")
 
 c.execute("""
-CREATE TABLE IF NOT EXISTS chord_data(
-    chord_name TEXT NOT NULL,
-    string_pattern TEXT NOT NULL
+CREATE TABLE IF NOT EXISTS song_data(
+    song_name TEXT NOT NULL,
+    artist TEXT NOT NULL,
+    chart_rank INTEGER NOT NULL,
+    lyrics TEXT NOT NULL
 );""")
 
+
 # try opening APIs (try/except) to insert data into APIs
+try:
+    with urllib.request.urlopen("https://raw.githubusercontent.com/mhollingshead/billboard-hot-100/main/recent.json") as response:
+        a = json.loads(response.read())
+        for song in a['data']:
+            command = "INSERT OR IGNORE INTO song_data(song_name, artist, chart_rank, lyrics) VALUES(?, ?, ?, ?)"
+            categories = (song['song'], song['artist'], song['this_week'], '')
+            c.execute(command, categories)
+        db.commit()
+except:
+    print("*********Error with Billboard API*********")
 
 
+# get lyrics for songs
+c.execute("SELECT song_name, artist FROM song_data")
+song_list = c.fetchall()
+#print(song_list)
 
+'''
+for song in song_list:
+    # (name, artist)
+    song_name = urllib.parse.quote(song[0])
+    artist = urllib.parse.quote(song[1])
+    try:
+        url = f"https://api.lyrics.ovh/v1/{artist}/{song_name}"
+        with urllib.request.urlopen(url) as response:
+            a = json.loads(response.read())
+            lyrics = a.get('lyrics')
+            c.execute("UPDATE song_data SET lyrics = ? WHERE song_name = ? AND artist = ?", (lyrics, song_name, artist))
+    except:
+        print("*********Error with Lyrics API*********")
+
+db.commit()
+'''
 
 #Helper Functions
 #====================================================================================#
@@ -65,8 +98,6 @@ def loggedin():
         return True
     return False
 
-idVals = 0
-
 #Webpage Sites
 #====================================================================================#
 @app.route("/home", methods=['GET', 'POST'])
@@ -76,9 +107,8 @@ def home():
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     if loggedin():
-        return redirect(url_for('start'))
+        return redirect(url_for('home'))
     else:
-        global idVals
         if request.method == 'POST':
             with sqlite3.connect(DB_FILE) as db:
                 c = db.cursor()
@@ -99,9 +129,7 @@ def register():
                         t = t + "password "
                     return registerpage(False, t)
 
-                c.execute("INSERT INTO user_data VALUES (?, ?, ?, ?, ?);", (idVals, request.form['username'].lower(), request.form['password'], "", 0))
-                idVals += 1
-                idVals += 1
+                c.execute("INSERT INTO user_data VALUES (?, ?, ?, ?, ?);", (None, request.form['username'], request.form['password'], "", 0))
                 db.commit()
 
                 session.clear()
@@ -125,11 +153,11 @@ def login():
 
                 if result is None:
                     return loginpage(False, "Username does not exist")
-                elif (request.form['password'] != result[1]):
+                elif (request.form['password'] != result[2]):
                     return loginpage(False, "Your password was incorrect")
 
                 session['username'] = request.form['username']
-                return redirect(url_for('start'))
+                return redirect(url_for('home'))
     else:
         return loginpage(True)
 
@@ -159,8 +187,20 @@ def tsg():
 def speechText():
     if not loggedin():
         return redirect(url_for('login'))
+        
+    if request.method == "POST":
+        db = sqlite3.connect(DB_FILE)
+        c = db.cursor()
+        #sixSongs = c.execute("SELECT * FROM song_data ORDER BY RANDOM() LIMIT 6")                
+        session["mySongs"] = [{"song_name": "Golden", "artist": "HUNTRIX", "image": "https://developers.elementor.com/docs/hooks/placeholder-image/"},
+                              {"song_name": "IDK", "artist": "some person", "image": "https://developers.elementor.com/docs/hooks/placeholder-image/"}]
+                              #sixSongs.fetchall()
+        
+        db.commit()
+        db.close()
 
-    return speechTextPage()
+    return speechTextPage(allSongList = session.get('mySongs', []),
+                          user=session['username'])
 
 @app.route("/leaderboard", methods=['GET', 'POST'])
 def leaderboard():
@@ -210,11 +250,11 @@ def activitiespage(user=''):
 def tsgpage(user=''):
     return render_template('tsg.html', user=user)
 
-def speechTextPage(user=''):
-    return render_template('speech-text.html', user=user)
+def speechTextPage(allSongList, user=''):
+    return render_template('speech-text.html', allSongList=allSongList, user=user)
 
 
 #====================================================================================#
 if __name__ == "__main__":  # false if this file imported as module
     #app.debug = True  # enable PSOD, auto-server-restart on code chg
-    app.run(port=5000)
+    app.run(port=8000)
