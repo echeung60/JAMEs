@@ -106,6 +106,7 @@ def home():
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
+    idVals = 0
     if loggedin():
         return redirect(url_for('home'))
     else:
@@ -187,15 +188,15 @@ def tsg():
 def speechText():
     if not loggedin():
         return redirect(url_for('login'))
-        
+
     if request.method == "POST":
         db = sqlite3.connect(DB_FILE)
         c = db.cursor()
-        #sixSongs = c.execute("SELECT * FROM song_data ORDER BY RANDOM() LIMIT 6")                
+        #sixSongs = c.execute("SELECT * FROM song_data ORDER BY RANDOM() LIMIT 6")
         session["mySongs"] = [{"song_name": "Golden", "artist": "HUNTRIX", "image": "https://developers.elementor.com/docs/hooks/placeholder-image/"},
                               {"song_name": "IDK", "artist": "some person", "image": "https://developers.elementor.com/docs/hooks/placeholder-image/"}]
                               #sixSongs.fetchall()
-        
+
         db.commit()
         db.close()
 
@@ -254,7 +255,10 @@ def speechTextPage(allSongList, user=''):
     return render_template('speech-text.html', allSongList=allSongList, user=user)
 
 
+def leaderboardpage(user=''):
+    return render_template("leaderboard.html", user=user, top_players=top_players)
+
 #====================================================================================#
 if __name__ == "__main__":  # false if this file imported as module
     #app.debug = True  # enable PSOD, auto-server-restart on code chg
-    app.run(port=8000)
+    app.run(port=5000)
