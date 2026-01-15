@@ -21,8 +21,39 @@
      }
   </style>
    <body>
-         <h1>
-            Leaderboard
-         </h1>
+     <nav>
+        <button class="c"> <a class="d" href="{{ url_for('home') }}">Home</a> </button>
+        <button class="c"> <a class="d" href="{{ url_for('activities') }}">Activities</a> </button>
+        <button class="c"> <a class="d" href="{{url_for('speechText')}}">Speech-Text</a> </button>
+        <button class="c"> <a class="d" href="{{ url_for('tsg') }}">TSG</a> </button>
+        <button class="c"> <a class="d" href="{{ url_for('profile') }}">Profile</a> </button>
+        <button class="c"> <a class="d" href="{{ url_for('logout') }}">Logout</a> </button>
+     </nav>
+       <h1>
+          Leaderboard
+       </h1>
+
+       <div>
+         <table>
+           <thead>
+             <tr>
+               <th>Rank</th>
+               <th>Name</th>
+               <th>Songs Created</th>
+             </tr>
+           </thead>
+
+           <tbody>
+             {% for player in top_players %}
+               <tr>
+                 <td>{{ loop.index }}</td>
+                 <td>{{ player[0] }}</td>
+                 <td>{{ player[1] }}</td>
+               </tr>
+             {% endfor %}
+           </tbody>
+         </table>
+       </div>
+       
    </body>
 </html>
