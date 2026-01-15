@@ -42,16 +42,18 @@ c.execute("""
 CREATE TABLE IF NOT EXISTS song_data(
     song_name TEXT NOT NULL,
     artist TEXT NOT NULL,
+    chart_num TEXT NOT NULL,
     lyrics TEXT NOT NULL
 );""")
 
 # try opening APIs (try/except) to insert data into APIs
 try:
-    with urllib.request.urlopen("https://raw.githubusercontent.com/mhollingshead/billboard-hot-100/main/date/2015-12-26.json") as response:
+    with urllib.request.urlopen("https://raw.githubusercontent.com/mhollingshead/billboard-hot-100/main/date/2015-11-07.json") as response:
         a = json.loads(response.read())
         for song in a['data']:
-            command = "INSERT OR IGNORE INTO song_data(song_name, artist, lyrics) VALUES(?, ?, ?)"
-            categories = (song['song'], song['artist'], '')
+            command = "INSERT OR IGNORE INTO song_data(song_name, artist, chart_num, lyrics) VALUES(?, ?, ?, ?)"
+            categories = (song['song'], song['artist'], song['last_week'], '')
+            #print(categories)
             c.execute(command, categories)
 except Exception as e:
     print(f"*********Error with Billboard API: {e}*********")
@@ -61,7 +63,7 @@ db.commit()
 # get lyrics for songs
 c.execute("SELECT song_name, artist FROM song_data")
 song_list = c.fetchall()
-#print(song_list)
+#print("\n",song_list)
 
 '''
 for song in song_list:
@@ -70,15 +72,17 @@ for song in song_list:
     artist = urllib.parse.quote(song[1])
     try:
         url = f"https://api.lyrics.ovh/v1/{artist}/{song_name}"
+        print(url)
         with urllib.request.urlopen(url) as response:
             a = json.loads(response.read())
             lyrics = a.get('lyrics')
             c.execute("UPDATE song_data SET lyrics = ? WHERE song_name = ? AND artist = ?", (lyrics, song_name, artist))
     except Exception as e:
-        print(f"*********Error with Lyrics API: {e}*********")
-
-db.commit()
+        print(f"*********Error with Lyrics API for {song}: {e}*********")
 '''
+print("\n*********FINISH LYRICS*********")
+db.commit()
+
 #Helper Functions
 #====================================================================================#
 usernames = {}
@@ -207,17 +211,16 @@ def speechText():
     if not loggedin():
         return redirect(url_for('login'))
 
-    if request.method == "POST":
-        db = sqlite3.connect(DB_FILE)
+    #if request.method == "POST":
+    with sqlite3.connect(DB_FILE) as db:
         c = db.cursor()
-        #sixSongs = c.execute("SELECT * FROM song_data ORDER BY RANDOM() LIMIT 6")
-        session["mySongs"] = [{"song_name": "Golden", "artist": "HUNTRIX", "image": "https://developers.elementor.com/docs/hooks/placeholder-image/"},
-                              {"song_name": "IDK", "artist": "some person", "image": "https://developers.elementor.com/docs/hooks/placeholder-image/"}]
-                              #sixSongs.fetchall()
-
-        db.commit()
-        db.close()
-
+        sixSongs = c.execute("SELECT * FROM song_data ORDER BY RANDOM() LIMIT 6")
+        session["mySongs"] = sixSongs.fetchall()
+            # [{"song_name": "Golden", "artist": "HUNTRIX", "image": "https://developers.elementor.com/docs/hooks/placeholder-image/"},
+            # {"song_name": "IDK", "artist": "some person", "image": "https://developers.elementor.com/docs/hooks/placeholder-image/"}]
+    db.commit()
+    
+    print(session.get('mySongs', []))
     return speechTextPage(allSongList = session.get('mySongs', []),
                           user=session['username'])
 
@@ -271,7 +274,6 @@ def tsgpage(user=''):
 
 def speechTextPage(allSongList, user=''):
     return render_template('speech-text.html', allSongList=allSongList, user=user)
-
 
 def leaderboardpage(user=''):
     return render_template("leaderboard.html", user=user, top_players=top_players)
