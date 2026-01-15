@@ -34,30 +34,29 @@ CREATE TABLE IF NOT EXISTS user_data(
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     saved_songs TEXT,
-    total_songs INTEGER
+    total_songs INTEGER,
+    bio TEXT
 );""")
 
 c.execute("""
 CREATE TABLE IF NOT EXISTS song_data(
     song_name TEXT NOT NULL,
     artist TEXT NOT NULL,
-    chart_rank INTEGER NOT NULL,
     lyrics TEXT NOT NULL
 );""")
 
-
 # try opening APIs (try/except) to insert data into APIs
 try:
-    with urllib.request.urlopen("https://raw.githubusercontent.com/mhollingshead/billboard-hot-100/main/recent.json") as response:
+    with urllib.request.urlopen("https://raw.githubusercontent.com/mhollingshead/billboard-hot-100/main/date/2015-12-26.json") as response:
         a = json.loads(response.read())
         for song in a['data']:
-            command = "INSERT OR IGNORE INTO song_data(song_name, artist, chart_rank, lyrics) VALUES(?, ?, ?, ?)"
-            categories = (song['song'], song['artist'], song['this_week'], '')
+            command = "INSERT OR IGNORE INTO song_data(song_name, artist, lyrics) VALUES(?, ?, ?)"
+            categories = (song['song'], song['artist'], '')
             c.execute(command, categories)
-        db.commit()
-except:
-    print("*********Error with Billboard API*********")
+except Exception as e:
+    print(f"*********Error with Billboard API: {e}*********")
 
+db.commit()
 
 # get lyrics for songs
 c.execute("SELECT song_name, artist FROM song_data")
@@ -75,12 +74,11 @@ for song in song_list:
             a = json.loads(response.read())
             lyrics = a.get('lyrics')
             c.execute("UPDATE song_data SET lyrics = ? WHERE song_name = ? AND artist = ?", (lyrics, song_name, artist))
-    except:
-        print("*********Error with Lyrics API*********")
+    except Exception as e:
+        print(f"*********Error with Lyrics API: {e}*********")
 
 db.commit()
 '''
-
 #Helper Functions
 #====================================================================================#
 usernames = {}
@@ -129,7 +127,7 @@ def register():
                         t = t + "password "
                     return registerpage(False, t)
 
-                c.execute("INSERT INTO user_data VALUES (?, ?, ?, ?, ?);", (None, request.form['username'], request.form['password'], "", 0))
+                c.execute("INSERT INTO user_data VALUES (?, ?, ?, ?, ?, ?);", (None, request.form['username'], request.form['password'], "", 0, ""))
                 db.commit()
 
                 session.clear()
@@ -257,4 +255,5 @@ def speechTextPage(allSongList, user=''):
 #====================================================================================#
 if __name__ == "__main__":  # false if this file imported as module
     #app.debug = True  # enable PSOD, auto-server-restart on code chg
-    app.run(port=8000)
+    app.run(port=5000)
+
