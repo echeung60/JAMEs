@@ -128,7 +128,7 @@ def register():
                         t = t + "password "
                     return registerpage(False, t)
 
-                c.execute("INSERT INTO user_data VALUES (?, ?, ?, ?, ?, ?);", (None, request.form['username'], request.form['password'], "", 0, ""))
+                c.execute("INSERT INTO user_data VALUES (?, ?, ?, ?, ?, ?);", (None, request.form['username'], request.form['password'], "", 0, "No bio"))
                 db.commit()
 
                 session.clear()
@@ -165,8 +165,28 @@ def profile():
     if not loggedin():
         return redirect(url_for('login'))
 
+    with sqlite3.connect(DB_FILE) as db:
+        c = db.cursor()
+        bio = c.execute("SELECT bio FROM user_data WHERE username=?", (session['username'],)).fetchone()
+
     # do stuff
-    return profilepage()
+    return render_template('profile.html', bio=bio)
+
+@app.route("/edit_profile", methods=['GET', 'POST'])
+def edit_profile():
+    if not loggedin():
+        return redirect(url_for('login'))
+
+    with sqlite3.connect(DB_FILE) as db:
+        c = db.cursor()
+        current_bio = c.execute("SELECT bio FROM user_data WHERE username=?", (session['username'],)).fetchone()
+        if request.method == 'POST':
+            newbio = request.form.get('newbio').strip()
+            c.execute("UPDATE user_data SET bio=? WHERE username=?", (newbio, session['username'],))
+            #db.commit()
+            return redirect(url_for('profile'))
+
+    return render_template('edit_profile.html', current_bio=current_bio)
 
 @app.route("/activities", methods=['GET', 'POST'])
 def activities():
