@@ -2,11 +2,11 @@
 
 ## Roster/Roles:
 Project Manager: Ethan Cheung  
-...: Jason Chan  
-...: Matthew Ciu  
-...: Amy Shrestha
+Leaderboard Coder: Jason Chan  
+Lyrics Coder: Matthew Ciu  
+Database Coder: Amy Shrestha
 
-**Description**: Our project is a website that creates the soon-to-be most popular song in the world. This is done by taking the most popular songs’ lyrics and randomly picking lines and putting them in an assigned template. There will also be functionality to create and share, share and save these songs, as well as your own original songs. 
+**Description**: Our project is a website that creates the soon-to-be most popular song in the world. This is done by taking the most popular songs’ lyrics and randomly picking lines and putting them in an assigned template. Users can choose two songs from 6 randomly rolled top songs to create a mashup of both pieces using a pre-set algorithm. Top the leaderboard by creating the most songs!
 
 ## Install guide
 1) Clone the repo into a local directory:
