@@ -25,10 +25,12 @@
     body {
       padding: 10px;
     }
+
     canvas {
       border: 2px solid black;
     }
   </style>
+
   <body>
     <nav>
       <button class="c">
@@ -59,6 +61,7 @@
       id="wholeNote"
       width="100"
       height="100"
+      class="invisible"
     />
 
     <canvas id="screensaver" width="600" height="400"></canvas>
@@ -70,8 +73,8 @@
       const img = document.getElementById("wholeNote");
       let x = 50;
       let y = 50;
-      let vx = 2;
-      let vy = 2;
+      let vx = 1;
+      let vy = 1;
 
       const imgSize = 100;
 
@@ -80,6 +83,8 @@
 
         x += vx;
         y += vy;
+        console.log(x);
+        console.log(y);
 
         if (x <= 0 || x + imgSize >= canvas.width) {
           vx *= -1;
