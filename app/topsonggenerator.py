@@ -2,7 +2,7 @@ import random
 
 #takes api call and turns it into a list of lyric strings
 def lyriclist(string):
-    lyrics = string.splitlines("\n")
+    lyrics = string.splitlines()
     for x in lyrics:
         lyrics[lyrics.index(x)] = x.replace("\n", "")
         lyrics[lyrics.index(x)] = x.replace("\r", "")
@@ -12,8 +12,10 @@ def lyriclist(string):
 
 #takes the two lists, picks the shorter one, randomly picks the lyrics between the two of them
 def combinesongs(song1, song2):
+    '''
     song1 = lyriclist(song1)
     song2 = lyriclist(song2)
+    '''
     topsong = []
     oneselect = 0
     twoselect = 0
@@ -22,8 +24,9 @@ def combinesongs(song1, song2):
     # takes length of shorter song and makes it amount of strings in topsong 
     if len(song1) <= len(song2):
         songlength = len(song1)
-    else: songlength = len(song2)
-    print(songlength)
+    else:
+        songlength = len(song2)
+    #print(songlength)
 
     # for the length of lines in the new song, choose between song one and song two and add the correspondign line from either song
     # oneselect and twoselect are just for checking how many line are from each song

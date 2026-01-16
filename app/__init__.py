@@ -21,6 +21,15 @@ import topsonggenerator as tsgPy
 app = Flask(__name__)  # create Flask object
 app.secret_key = b'weRtheJAMEs'
 
+def getRealArtist(string):
+    lst = [" Featuring ", " + ", " & "]
+    for i in lst:
+        if i in string:
+            string = string.split(i)[0]
+            break
+    
+    return string
+
 
 #SQLITE3 Databases
 #====================================================================================#
@@ -45,7 +54,8 @@ CREATE TABLE IF NOT EXISTS song_data(
     song_name TEXT NOT NULL,
     artist TEXT NOT NULL,
     chart_num TEXT NOT NULL,
-    lyrics TEXT NOT NULL
+    lyrics TEXT NOT NULL,
+    UNIQUE(song_name, artist)
 );""")
 
 # try opening APIs (try/except) to insert data into APIs
@@ -69,10 +79,14 @@ song_list = c.fetchall()
 
 for song in song_list[:30]:
     # (name, artist)
-    song_name = urllib.parse.quote(song[0])
-    artist = urllib.parse.quote(song[1])
+    song_name = song[0]
+    artist = song[1]
+    realArtist = getRealArtist(song[1])
+    
+    song_name_url = urllib.parse.quote(song_name)
+    artist_url = urllib.parse.quote(realArtist)
     try:
-        url = f"https://api.lyrics.ovh/v1/{artist}/{song_name}"
+        url = f"https://api.lyrics.ovh/v1/{artist_url}/{song_name_url}"
         #print(url)
         with urllib.request.urlopen(url) as response:
             a = json.loads(response.read())
@@ -87,6 +101,13 @@ for song in song_list[:30]:
         db.commit()
     except Exception as e:
         print(f"*Error with Lyrics API for {song}: {e}*")
+        
+with sqlite3.connect(DB_FILE) as db:
+    c = db.cursor()
+    c.execute("SELECT song_name, artist, lyrics FROM song_data WHERE lyrics = '' OR lyrics IS NULL")
+    empty_lyrics = c.fetchall()
+    print("\n\nSongs with empty lyrics still in DB:", empty_lyrics)
+
 
 print("\n*********FINISH LYRICS*********")
 
@@ -106,6 +127,18 @@ def loggedin():
     if 'username' in session:
         return True
     return False
+
+def stringToList(string):
+    final = []
+    
+    songs = string.split("],")
+    for song in songs:
+        song = song.replace("[", "").replace("]","") # songs and artists split
+        song = song.strip()
+        
+        split_song = song.split(",")
+        final.append(split_song)
+    return final
 
 #Webpage Sites
 #====================================================================================#
@@ -204,7 +237,7 @@ def tsg(link):
     if not loggedin():
         return redirect(url_for('login'))
 
-    session['selected_list'] = "[Adventure of a Lifetime, Coldplay], [Blank Space, Taylor Swift]"
+    session['selected_list'] = "[Adventure of a Lifetime, Coldplay], [Cheerleader, OMI]"
     session['selected_list'] = stringToList(session['selected_list'])
     
     if 'selected_list' not in session or 'selected_list' is None or len(session['selected_list']) < 2:
@@ -228,15 +261,16 @@ def tsg(link):
         else:
             secondSong = ""
         
-        print(f"\n\n{firstSong}\n\n")
-        print(f"\n\n{secondSong}\n\n")
-        
-    newSongLyrics = tsgPy.combinesongs(firstSong, secondSong)
-    newSongTitle = ''
+        #print(f"\n\n{firstSong}\n\n")
+        #print(f"\n\n{secondSong}\n\n")
+    
+    firstSongList = tsgPy.lyriclist(firstSong)
+    secondSongList = tsgPy.lyriclist(secondSong)
+    
+    newSongLyrics = tsgPy.combinesongs(firstSongList, secondSongList)
+    newSongTitle = urllib.parse.unquote(link)
     
     if request.method == 'POST':
-        newSongTitle = link
-        
         if not newSongTitle:
             return redirect(url_for('speech-text'))
         
@@ -266,27 +300,38 @@ def speechText():
     if not loggedin():
         return redirect(url_for('login'))
     
-    if request.method == "POST":
-        givenTitle = request.form.get("title", "").strip()
-        
-        if givenTitle == "":
-            return speechTextPage(allSongList = session.get('mySongs', []),
-                          user=session['username'])
-        
-        with sqlite3.connect(DB_FILE) as db:
-            c = db.cursor()
-            sixSongs = c.execute("SELECT * FROM song_data ORDER BY RANDOM() LIMIT 6")
-            session["mySongs"] = sixSongs.fetchall()
-            # [{"song_name": "Golden", "artist": "HUNTRIX", "image": "https://developers.elementor.com/docs/hooks/placeholder-image/"},
-            # {"song_name": "IDK", "artist": "some person", "image": "https://developers.elementor.com/docs/hooks/placeholder-image/"}]
-        
-            return redirect(url_for('tsg', link=urllib.parse.quote(givenTitle)))
+    givenTitle = ''
     
-        db.commit()
+    with sqlite3.connect(DB_FILE) as db:
+        c = db.cursor()
+        sixSongs = c.execute("SELECT * FROM song_data ORDER BY RANDOM() LIMIT 6")
+        sixSongs = sixSongs.fetchall()
+        # [{"song_name": "Golden", "artist": "HUNTRIX", "image": "https://developers.elementor.com/docs/hooks/placeholder-image/"},
+        # {"song_name": "IDK", "artist": "some person", "image": "https://developers.elementor.com/docs/hooks/placeholder-image/"}]
+    db.commit()
+    
+    if 'selected_list' not in session or session['selected_list'] is None:
+        session['selected_list'] = []
+    if 'mySongs' not in session:
+        session['mySongs'] = sixSongs
+    
+    if request.method == "POST":
+        chooseSong = request.form.get("select")
+        if chooseSong:
+            session['selected_list'].append(chooseSong)
+        if 'create_song' in request.form:
+            givenTitle = request.form.get("title")
+        
+        if givenTitle:
+            return redirect(url_for('tsg', link=urllib.parse.quote(givenTitle)))
+        else:
+            return speechTextPage(allSongList = session['mySongs'],
+                                  song_list = session['selected_list'],
+                                  user=session['username'])
     
     print(session.get('mySongs', []))
-    return speechTextPage(allSongList = session.get('mySongs', []),
-                          user=session['username'])
+    return speechTextPage(allSongList = session['mySongs'],
+                        song_list=session['selected_list'], user=session['username'])
 
 @app.route("/leaderboard", methods=['GET', 'POST'])
 def leaderboard():
@@ -334,26 +379,14 @@ def tsgpage(newSongLyrics, newSongTitle, user=''):
     return render_template('tsg.html', newSongLyrics=newSongLyrics,
                            newSongTitle=newSongTitle, user=user)
 
-def speechTextPage(allSongList, user=''):
-    return render_template('speech-text.html', allSongList=allSongList, user=user)
+def speechTextPage(allSongList, song_list, user=''):
+    return render_template('speech-text.html', allSongList=allSongList,
+                           song_list=song_list, user=user)
 
 def leaderboardpage(user=''):
     return render_template("leaderboard.html", user=user, top_players=top_players)
-
-def stringToList(string):
-    final = []
-    
-    songs = string.split("],")
-    for song in songs:
-        song = song.replace("[", "").replace("]","") # songs and artists split
-        song = song.strip()
-        
-        split_song = song.split(",")
-        final.append(split_song)
-    return final
-        
         
 #====================================================================================#
 if __name__ == "__main__":  # false if this file imported as module
-    #app.debug = True  # enable PSOD, auto-server-restart on code chg
+    app.debug = True  # enable PSOD, auto-server-restart on code chg
     app.run(port=5000)

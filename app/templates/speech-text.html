@@ -19,9 +19,6 @@
      body{
      padding: 20px;
      }
-     .card{
-       width: 100%;
-     }
   </style>
    <body>
      <nav>
@@ -36,24 +33,30 @@
             Speech-Text
          </h1>
          <br>
+         {% if song_list|length == 2 %}
          <form method="POST">
-           <input type="text" name="title" id="title">
-           <button type="submit">Create Song</button>
+           <p>Enter your new, soon-to-be top, song's name:</p>
+           <input type="text" name="title" id="title" required>
+           <button type="submit" name="create_song">Create Song</button>
          </form>
+         <br>
+         <br>
+         {% endif %}
 
-         {% for song in allSongList %}
-         <div class="row">
-           <div class="card" style="width: 19rem;">
-               <img src="{{ song['image'] }}" class="card-img-top" alt="...">
-               <div class="card-body">
-                 <h5 class="card-title">Title: {{ song[0] }}</h5>
-                 <p class="card-text">Artist: {{ song[1] }}</p>
-                 <br>
-                 <button type="submit" name="title" value="{{ song[0] }}" class="btn btn-primary">Select</button>
-               </div>
-           </div>
-           <br>
-           <br>
-         {% endfor %}
+         <div class="row row-cols-1 row-cols-md-3 g-4">
+           {% for song in allSongList %}
+  {% set song_str = song[0] + '|' + song[1] %}
+  <div class="card mb-3">
+    <h5>{{ song[0] }}</h5>
+    <p>{{ song[1] }}</p>
+    <form method="POST">
+      <input type="hidden" name="select" value="{{ song_str }}">
+      <button type="submit" class="btn btn-primary btn-sm">
+        {% if song_str in song_list %} Selected {% else %} Select {% endif %}
+      </button>
+    </form>
+  </div>
+{% endfor %}
+       </div>
    </body>
 </html>
