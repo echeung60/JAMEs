@@ -1,4 +1,4 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <!--
    JAMEs
    Ethan Cheung (PM), Amy Shrestha, Jason Chan, Matthew Ciu
@@ -6,39 +6,55 @@
    time spent: 0.1 hrs
    -->
 <html>
-   <head>
-      <link rel="preconnect" href="https://fonts.googleapis.com">
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-      <link href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap" rel="stylesheet">
-      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-      <!-- <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}"> -->
-      <title> PROFILE </title>
-   </head>
-   <style>
-     body{
-     padding:10px;
-     }
+  <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}"> -->
+    <title>PROFILE</title>
+  </head>
+  <style>
+    body {
+      padding: 10px;
+    }
   </style>
-   <body>
-     <nav>
-        <button class="c"> <a class="d" href="{{ url_for('home') }}">Home</a> </button>
-        <button class="c"> <a class="d" href="{{ url_for('speechText') }}">Speech-Text</a> </button>
-        <button class="c"> <a class="d" href="{{ url_for('leaderboard') }}">Leaderboard</a> </button>
-        <button class="c"> <a class="d" href="{{ url_for('profile') }}">Profile</a> </button>
-        <button class="c"> <a class="d" href="{{ url_for('logout') }}">Logout</a> </button>
-     </nav>
-         <h1>
-            Profile Page
-         </h1>
+  <body>
+    <nav>
+      <button class="c">
+        <a class="d" href="{{ url_for('home') }}">Home</a>
+      </button>
+      <button class="c">
+        <a class="d" href="{{ url_for('speechText') }}">Speech-Text</a>
+      </button>
+      <button class="c">
+        <a class="d" href="{{ url_for('leaderboard') }}">Leaderboard</a>
+      </button>
+      <button class="c">
+        <a class="d" href="{{ url_for('profile') }}">Profile</a>
+      </button>
+      <button class="c">
+        <a class="d" href="{{ url_for('logout') }}">Logout</a>
+      </button>
+    </nav>
+    <h1>Profile Page</h1>
 
-         <h3>Currently logged in as: {{ name }}</h3>
+    <h3>Currently logged in as: {{ name }}</h3>
 
-         <p>{{ bio }}</p>
+    <p>{{ bio }}</p>
 
-         <button class="c"> <a class="d" href="{{ url_for('edit_profile') }}">Edit Profile</a> </button>
+    <button class="c">
+      <a class="d" href="{{ url_for('edit_profile') }}">Edit Profile</a>
+    </button>
 
-         <br>
-         <br>
-   </body>
+    <br />
+    <br />
+  </body>
 </html>
