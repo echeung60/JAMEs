@@ -91,7 +91,7 @@ for song in song_list[:30]:
         with urllib.request.urlopen(url) as response:
             a = json.loads(response.read())
             lyrics = a.get('lyrics')
-            
+
             if lyrics:
                 c.execute("UPDATE song_data SET lyrics = ? WHERE song_name = ? AND artist = ?", (lyrics, song_name, artist))
                 #print(lyrics)
@@ -101,12 +101,6 @@ for song in song_list[:30]:
         db.commit()
     except Exception as e:
         print(f"*Error with Lyrics API for {song}: {e}*")
-        
-with sqlite3.connect(DB_FILE) as db:
-    c = db.cursor()
-    c.execute("SELECT song_name, artist, lyrics FROM song_data WHERE lyrics = '' OR lyrics IS NULL")
-    empty_lyrics = c.fetchall()
-    print("\n\nSongs with empty lyrics still in DB:", empty_lyrics)
 
 
 print("\n*********FINISH LYRICS*********")
@@ -214,7 +208,7 @@ def profile():
         bio = c.execute("SELECT bio FROM user_data WHERE username=?", (session['username'],)).fetchone()
 
     # do stuff
-    return render_template('profile.html', bio=bio)
+    return render_template('profile.html', bio=bio[0])
 
 @app.route("/edit_profile", methods=['GET', 'POST'])
 def edit_profile():
@@ -224,13 +218,14 @@ def edit_profile():
     with sqlite3.connect(DB_FILE) as db:
         c = db.cursor()
         current_bio = c.execute("SELECT bio FROM user_data WHERE username=?", (session['username'],)).fetchone()
+        print(current_bio)
         if request.method == 'POST':
             newbio = request.form.get('newbio').strip()
             c.execute("UPDATE user_data SET bio=? WHERE username=?", (newbio, session['username'],))
-            #db.commit()
+            db.commit()
             return redirect(url_for('profile'))
 
-    return render_template('edit_profile.html', current_bio=current_bio)
+    return render_template('edit_profile.html', current_bio=current_bio[0])
 
 @app.route("/tsg/<link>", methods=['GET', 'POST'])
 def tsg(link):
@@ -239,23 +234,23 @@ def tsg(link):
 
     session['selected_list'] = "[Adventure of a Lifetime, Coldplay], [Cheerleader, OMI]"
     session['selected_list'] = stringToList(session['selected_list'])
-    
+
     if 'selected_list' not in session or 'selected_list' is None or len(session['selected_list']) < 2:
         return redirect(url_for('speech-text'))
-    
+
     with sqlite3.connect(DB_FILE) as db:
         c = db.cursor()
-        
+
         firstSong = c.execute("SELECT lyrics FROM song_data where song_name = ? AND artist = ?",
                               (session['selected_list'][0][0], session['selected_list'][0][1])).fetchone()
         secondSong = c.execute("SELECT lyrics FROM song_data where song_name = ? AND artist = ?",
                               (session['selected_list'][1][0], session['selected_list'][1][1])).fetchone()
-        
+
         if firstSong:
             firstSong = firstSong[0] #tuple to string
         else:
             firstSong = ""
-        
+
         if secondSong:
             secondSong = secondSong[0]
         else:
@@ -273,23 +268,23 @@ def tsg(link):
     if request.method == 'POST':
         if not newSongTitle:
             return redirect(url_for('speech-text'))
-        
+
         with sqlite3.connect(DB_FILE) as db:
             c = db.cursor()
             result = c.execute("SELECT saved_songs, total_songs FROM user_data WHERE username = ?", (session['username'],))
             old_songs_result = result.fetchone()
-            
+
             if result:
                 old_songs, old_num = old_songs_result
             else:
                 old_songs, old_num = ("", 0)
-            
+
             old_songs += newSongTitle + "~"
             old_num += 1
-            
+
             c.execute("UPDATE user_data SET saved_songs = ?, total_songs = ? WHERE username=?",
                       (old_songs, old_num, session['username']))
-            
+
             db.commit()
 
     return tsgpage(newSongLyrics=newSongLyrics, newSongTitle=newSongTitle,
@@ -299,7 +294,6 @@ def tsg(link):
 def speechText():
     if not loggedin():
         return redirect(url_for('login'))
-    
     givenTitle = ''
     
     with sqlite3.connect(DB_FILE) as db:
@@ -328,7 +322,6 @@ def speechText():
             return speechTextPage(allSongList = session['mySongs'],
                                   song_list = session['selected_list'],
                                   user=session['username'])
-    
     print(session.get('mySongs', []))
     return speechTextPage(allSongList = session['mySongs'],
                         song_list=session['selected_list'], user=session['username'])
@@ -385,8 +378,8 @@ def speechTextPage(allSongList, song_list, user=''):
 
 def leaderboardpage(user=''):
     return render_template("leaderboard.html", user=user, top_players=top_players)
-        
+
 #====================================================================================#
 if __name__ == "__main__":  # false if this file imported as module
     app.debug = True  # enable PSOD, auto-server-restart on code chg
-    app.run(port=5000)
+    app.run(port=7010)
