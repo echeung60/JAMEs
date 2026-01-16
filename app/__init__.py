@@ -313,6 +313,9 @@ def tsg(link):
     print(f"\n\n{newSongLyrics}\n\n")
     newSongTitle = urllib.parse.unquote(link)
     
+    firstSongD ={"name": session['selected_list'][0][0], "artist": getRealArtist(session['selected_list'][0][1])}
+    secondSongD = {"name": session['selected_list'][1][0], "artist": getRealArtist(session['selected_list'][1][1])}
+    
     with sqlite3.connect(DB_FILE) as db:
         c = db.cursor()
         result = c.execute("SELECT saved_songs, total_songs FROM user_data WHERE username = ?", (session['username'],))
@@ -331,9 +334,7 @@ def tsg(link):
                       (old_songs, old_num, session['username']))
 
         db.commit()
-    firstSongD ={"name": session['selected_list'][0][0], "artist": getRealArtist(session['selected_list'][0][1])}
-    secondSongD = {"name": session['selected_list'][1][0], "artist": getRealArtist(session['selected_list'][1][1])}
-    
+        
     session.pop('selected_list', None)
     session.pop('mySongs', None)
     

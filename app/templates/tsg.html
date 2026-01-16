@@ -40,6 +40,7 @@
             <p>{{ line }}</p>
             <br>
           {% endfor %}
-          <p>Songs used: {{ a[0] }}, {{ a[1] }}</p>
+          <p>Songs used: {{ a[0]['name'] }} by {{ a[0]['artist'] }}</p>
+          <p>{{ a[1]['name'] }} by {{ a[1]['artist'] }}</p>
    </body>
 </html>
