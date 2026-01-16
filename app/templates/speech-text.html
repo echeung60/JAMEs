@@ -19,6 +19,11 @@
      body{
      padding: 20px;
      }
+     .covers{
+       width:150px;
+       height:150px;
+       margin:0px;
+     }
   </style>
    <body>
      <nav>
@@ -47,6 +52,7 @@
            {% for song in allSongList %}
   {% set song_str = song[0] + '|' + song[1] %}
   <div class="card mb-3" style="padding:20px;">
+    <img src="{{ song[2] }}" alt="cover for song" class="covers">
     <h5>{{ song[0] }}</h5>
     <p>{{ song[1] }}</p>
     <form method="POST">
