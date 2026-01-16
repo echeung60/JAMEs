@@ -1,6 +1,8 @@
 Billboard API
-- Gives music charts, artists, and songs across various genres at November 28, 2015
+- Gives top 100 billboard songs in music charts with artists, and songs across various genres during specific dates
+
 Lyrics API
-- Gives lyrics for songs
+- Gives lyrics for songs by accessing artist and song name
+
 Album Cover API
-- Gives album covers for songs
+- Gives album covers for songs with artist and album cover information

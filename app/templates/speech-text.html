@@ -46,7 +46,7 @@
          <div class="row row-cols-1 row-cols-md-3 g-4">
            {% for song in allSongList %}
   {% set song_str = song[0] + '|' + song[1] %}
-  <div class="card mb-3">
+  <div class="card mb-3" style="padding:20px;">
     <h5>{{ song[0] }}</h5>
     <p>{{ song[1] }}</p>
     <form method="POST">
