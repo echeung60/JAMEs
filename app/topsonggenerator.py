@@ -3,9 +3,9 @@ import random
 #takes api call and turns it into a list of lyric strings
 def lyriclist(string):
     lyrics = string.splitlines()
-    for x in lyrics:
-        lyrics[lyrics.index(x)] = x.replace("\n", "")
-        lyrics[lyrics.index(x)] = x.replace("\r", "")
+    for i in range(len(lyrics)):
+        lyrics[i] = lyrics[i].replace("\n", "")
+        lyrics[i] = lyrics[i].replace("\r", "")
     lyrics = list(filter(None, map(str.strip, lyrics))) #got this pretty line of code off "geeks for geeks"
     #print(lyrics)
     return lyrics

@@ -13,6 +13,7 @@ from flask import session
 import sqlite3   #enable control of an sqlite database
 import urllib.request
 import json
+import random
 
 import topsonggenerator as tsgPy
 
@@ -55,6 +56,7 @@ CREATE TABLE IF NOT EXISTS song_data(
     artist TEXT NOT NULL,
     chart_num TEXT NOT NULL,
     lyrics TEXT NOT NULL,
+    cover TEXT,
     UNIQUE(song_name, artist)
 );""")
 
@@ -63,8 +65,8 @@ try:
     with urllib.request.urlopen("https://raw.githubusercontent.com/mhollingshead/billboard-hot-100/main/date/2015-11-07.json") as response:
         a = json.loads(response.read())
         for song in a['data']:
-            command = "INSERT OR IGNORE INTO song_data(song_name, artist, chart_num, lyrics) VALUES(?, ?, ?, ?)"
-            categories = (song['song'], song['artist'], song['last_week'], '')
+            command = "INSERT OR IGNORE INTO song_data(song_name, artist, chart_num, lyrics, cover) VALUES(?, ?, ?, ?, ?)"
+            categories = (song['song'], song['artist'], song['last_week'], '', '')
             #print(categories)
             c.execute(command, categories)
 except Exception as e:
@@ -104,6 +106,37 @@ for song in song_list[:30]:
 
 
 print("\n*********FINISH LYRICS*********")
+db.commit()
+
+
+c.execute("SELECT DISTINCT artist FROM song_data")
+song_list2 = c.fetchall()
+
+with open("app/keys/key_albumcover.txt", "r") as a:
+    key = a.read().strip()
+
+for song in song_list2[:30]:
+    try:
+        artist = urllib.parse.quote(getRealArtist(song[0]))
+        oldArtist = song[0]
+        with urllib.request.urlopen(f"http://ws.audioscrobbler.com/2.0/?method=artist.gettopalbums&artist={artist}&api_key={key}&format=json") as response:
+            a = json.loads(response.read())
+            albums = a['topalbums'].get('album')
+            
+            randCovers = random.choice(albums).get("image")
+            randCover = ""
+            for i in randCovers:
+                if i.get("#text") and i.get("size") == 'large':
+                    randCover = i["#text"]
+                    break
+                    
+            if randCover:
+                c.execute("UPDATE song_data SET cover = ? WHERE artist = ?", (randCover, oldArtist))
+    except Exception as e:
+        print(f"*********Error with Album Cover API: {e}*********")
+
+db.commit()
+    
 
 #Helper Functions
 #====================================================================================#
@@ -232,8 +265,8 @@ def tsg(link):
     if not loggedin():
         return redirect(url_for('login'))
 
-    session['selected_list'] = "[Adventure of a Lifetime, Coldplay], [Cheerleader, OMI]"
-    session['selected_list'] = stringToList(session['selected_list'])
+    #session['selected_list'] = "[Adventure of a Lifetime, Coldplay], [Cheerleader, OMI]"
+    #session['selected_list'] = stringToList(session['selected_list'])
 
     if 'selected_list' not in session or 'selected_list' is None or len(session['selected_list']) < 2:
         return redirect(url_for('speech-text'))
@@ -242,9 +275,9 @@ def tsg(link):
         c = db.cursor()
 
         firstSong = c.execute("SELECT lyrics FROM song_data where song_name = ? AND artist = ?",
-                              (session['selected_list'][0][0], session['selected_list'][0][1])).fetchone()
+                              (session['selected_list'][0][0], getRealArtist(session['selected_list'][0][1]))).fetchone()
         secondSong = c.execute("SELECT lyrics FROM song_data where song_name = ? AND artist = ?",
-                              (session['selected_list'][1][0], session['selected_list'][1][1])).fetchone()
+                              (session['selected_list'][1][0], getRealArtist(session['selected_list'][1][1]))).fetchone()
 
         if firstSong:
             firstSong = firstSong[0] #tuple to string
@@ -258,35 +291,37 @@ def tsg(link):
         
         #print(f"\n\n{firstSong}\n\n")
         #print(f"\n\n{secondSong}\n\n")
+            
+    newSongLyrics = ""
     
-    firstSongList = tsgPy.lyriclist(firstSong)
-    secondSongList = tsgPy.lyriclist(secondSong)
-    
-    newSongLyrics = tsgPy.combinesongs(firstSongList, secondSongList)
+    if firstSong and secondSong:
+        firstSongList = tsgPy.lyriclist(firstSong)
+        secondSongList = tsgPy.lyriclist(secondSong)
+        newSongLyrics = tsgPy.combinesongs(firstSongList, secondSongList)
+        
     newSongTitle = urllib.parse.unquote(link)
     
-    if request.method == 'POST':
-        if not newSongTitle:
-            return redirect(url_for('speech-text'))
+    with sqlite3.connect(DB_FILE) as db:
+        c = db.cursor()
+        result = c.execute("SELECT saved_songs, total_songs FROM user_data WHERE username = ?", (session['username'],))
+        old_songs_result = result.fetchone()
 
-        with sqlite3.connect(DB_FILE) as db:
-            c = db.cursor()
-            result = c.execute("SELECT saved_songs, total_songs FROM user_data WHERE username = ?", (session['username'],))
-            old_songs_result = result.fetchone()
+        if result:
+            old_songs, old_num = old_songs_result
+        else:
+            old_songs, old_num = ("", 0)
 
-            if result:
-                old_songs, old_num = old_songs_result
-            else:
-                old_songs, old_num = ("", 0)
+        old_songs += newSongTitle + "~"
+        old_num += 1
 
-            old_songs += newSongTitle + "~"
-            old_num += 1
-
-            c.execute("UPDATE user_data SET saved_songs = ?, total_songs = ? WHERE username=?",
+        c.execute("UPDATE user_data SET saved_songs = ?, total_songs = ? WHERE username=?",
                       (old_songs, old_num, session['username']))
 
-            db.commit()
-
+        db.commit()
+    
+    session.pop('selected_list', None)
+    session.pop('mySongs', None)
+    
     return tsgpage(newSongLyrics=newSongLyrics, newSongTitle=newSongTitle,
                    user=session['username'])
 
@@ -298,7 +333,7 @@ def speechText():
     
     with sqlite3.connect(DB_FILE) as db:
         c = db.cursor()
-        sixSongs = c.execute("SELECT * FROM song_data ORDER BY RANDOM() LIMIT 6")
+        sixSongs = c.execute("SELECT song_name, artist, cover FROM song_data ORDER BY RANDOM() LIMIT 6")
         sixSongs = sixSongs.fetchall()
         # [{"song_name": "Golden", "artist": "HUNTRIX", "image": "https://developers.elementor.com/docs/hooks/placeholder-image/"},
         # {"song_name": "IDK", "artist": "some person", "image": "https://developers.elementor.com/docs/hooks/placeholder-image/"}]
@@ -312,6 +347,7 @@ def speechText():
     if request.method == "POST":
         chooseSong = request.form.get("select")
         if chooseSong:
+            song_name, artist = chooseSong.split('|')
             session['selected_list'].append(chooseSong)
         if 'create_song' in request.form:
             givenTitle = request.form.get("title")
@@ -381,5 +417,5 @@ def leaderboardpage(user=''):
 
 #====================================================================================#
 if __name__ == "__main__":  # false if this file imported as module
-    app.debug = True  # enable PSOD, auto-server-restart on code chg
-    app.run(port=7010)
+    #app.debug = True  # enable PSOD, auto-server-restart on code chg
+    app.run(port=7004)
