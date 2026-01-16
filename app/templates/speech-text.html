@@ -58,8 +58,8 @@
     <form method="POST">
       <input type="hidden" name="select" value="{{ song_str }}">
       <button type="submit" class="btn btn-primary btn-sm">
-        {% if song_str in song_list %} Selected {% else %} Select {% endif %}
-      </button>
+  {% if [song[0], song[1]] in song_list %} Selected {% else %} Select {% endif %}
+</button>
     </form>
   </div>
 {% endfor %}
