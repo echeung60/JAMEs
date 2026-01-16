@@ -28,7 +28,7 @@ def getRealArtist(string):
         if i in string:
             string = string.split(i)[0]
             break
-    
+
     return string
 
 
@@ -84,7 +84,7 @@ for song in song_list[:30]:
     song_name = song[0]
     artist = song[1]
     realArtist = getRealArtist(song[1])
-    
+
     song_name_url = urllib.parse.quote(song_name)
     artist_url = urllib.parse.quote(realArtist)
     try:
@@ -157,12 +157,12 @@ def loggedin():
 
 def stringToList(string):
     final = []
-    
+
     songs = string.split("],")
     for song in songs:
         song = song.replace("[", "").replace("]","") # songs and artists split
         song = song.strip()
-        
+
         split_song = song.split(",")
         final.append(split_song)
     return final
@@ -241,7 +241,7 @@ def profile():
         bio = c.execute("SELECT bio FROM user_data WHERE username=?", (session['username'],)).fetchone()
 
     # do stuff
-    return render_template('profile.html', bio=bio[0])
+    return render_template('profile.html', bio=bio[0], name=session['username'])
 
 @app.route("/edit_profile", methods=['GET', 'POST'])
 def edit_profile():
@@ -258,7 +258,7 @@ def edit_profile():
             db.commit()
             return redirect(url_for('profile'))
 
-    return render_template('edit_profile.html', current_bio=current_bio[0])
+    return render_template('edit_profile.html', current_bio=current_bio[0], name=session['username'])
 
 @app.route("/tsg/<link>", methods=['GET', 'POST'])
 def tsg(link):
@@ -288,7 +288,7 @@ def tsg(link):
             secondSong = secondSong[0]
         else:
             secondSong = ""
-        
+
         #print(f"\n\n{firstSong}\n\n")
         #print(f"\n\n{secondSong}\n\n")
             
@@ -330,7 +330,7 @@ def speechText():
     if not loggedin():
         return redirect(url_for('login'))
     givenTitle = ''
-    
+
     with sqlite3.connect(DB_FILE) as db:
         c = db.cursor()
         sixSongs = c.execute("SELECT song_name, artist, cover FROM song_data ORDER BY RANDOM() LIMIT 6")
@@ -338,12 +338,12 @@ def speechText():
         # [{"song_name": "Golden", "artist": "HUNTRIX", "image": "https://developers.elementor.com/docs/hooks/placeholder-image/"},
         # {"song_name": "IDK", "artist": "some person", "image": "https://developers.elementor.com/docs/hooks/placeholder-image/"}]
     db.commit()
-    
+
     if 'selected_list' not in session or session['selected_list'] is None:
         session['selected_list'] = []
     if 'mySongs' not in session:
         session['mySongs'] = sixSongs
-    
+
     if request.method == "POST":
         chooseSong = request.form.get("select")
         if chooseSong:
@@ -351,7 +351,7 @@ def speechText():
             session['selected_list'].append(chooseSong)
         if 'create_song' in request.form:
             givenTitle = request.form.get("title")
-        
+
         if givenTitle:
             return redirect(url_for('tsg', link=urllib.parse.quote(givenTitle)))
         else:
