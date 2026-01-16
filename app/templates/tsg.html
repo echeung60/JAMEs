@@ -23,8 +23,7 @@
    <body>
      <nav>
         <button class="c"> <a class="d" href="{{ url_for('home') }}">Home</a> </button>
-        <button class="c"> <a class="d" href="{{ url_for('activities') }}">Activities</a> </button>
-        <button class="c"> <a class="d" href="{{url_for('speechText')}}">Speech-Text</a> </button>
+        <button class="c"> <a class="d" href="{{ url_for('speechText') }}">Speech-Text</a> </button>
         <button class="c"> <a class="d" href="{{ url_for('leaderboard') }}">Leaderboard</a> </button>
         <button class="c"> <a class="d" href="{{ url_for('profile') }}">Profile</a> </button>
         <button class="c"> <a class="d" href="{{ url_for('logout') }}">Logout</a> </button>
@@ -32,5 +31,14 @@
          <h1>
             Top Song Generator (TSG)
          </h1>
+         <br>
+          <h2>{{ newSongTitle }}</h2>
+          <h3>By {{ user }}</h3>
+          <br>
+          <h4>Lyrics</h4>
+          {% for line in lyrics %}
+            <p>{{ line }}</p>
+            <br>
+          {% endfor %}
    </body>
 </html>

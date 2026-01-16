@@ -26,8 +26,7 @@
    <body>
      <nav>
         <button class="c"> <a class="d" href="{{ url_for('home') }}">Home</a> </button>
-        <button class="c"> <a class="d" href="{{ url_for('activities') }}">Activities</a> </button>
-        <button class="c"> <a class="d" href="{{ url_for('tsg') }}">TSG</a> </button>
+        <button class="c"> <a class="d" href="{{url_for('speechText')}}">Speech-Text</a> </button>
         <button class="c"> <a class="d" href="{{ url_for('leaderboard') }}">Leaderboard</a> </button>
         <button class="c"> <a class="d" href="{{ url_for('profile') }}">Profile</a> </button>
         <button class="c"> <a class="d" href="{{ url_for('logout') }}">Logout</a> </button>
@@ -37,6 +36,11 @@
             Speech-Text
          </h1>
          <br>
+         <form method="POST">
+           <input type="text" name="title" id="title">
+           <button type="submit">Create Song</button>
+         </form>
+
          {% for song in allSongList %}
          <div class="row">
            <div class="card" style="width: 19rem;">
@@ -44,7 +48,8 @@
                <div class="card-body">
                  <h5 class="card-title">Title: {{ song[0] }}</h5>
                  <p class="card-text">Artist: {{ song[1] }}</p>
-                 <a href="#" class="btn btn-primary">Select</a>
+                 <br>
+                 <button type="submit" name="title" value="{{ song[0] }}" class="btn btn-primary">Select</button>
                </div>
            </div>
            <br>
